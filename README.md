@@ -12,11 +12,11 @@ No frills Minecraft headshot provider. Retrieves profiles & textures directly fr
 - UUIDs (dashed or non-dashed) are preferred; `usernames -> UUID` mappings are cached for one hour.
 
 ### Examples
-| Image                                               | URL                                                     |
-|-----------------------------------------------------|---------------------------------------------------------|
-| ![](https://heads.discordsrv.com/Scarsz/head/64)    | `https://heads.discordsrv.com/Scarsz/head`              |
-| ![](https://heads.discordsrv.com/Scarsz/overlay/64) | `https://heads.discordsrv.com/Scarsz/overlay` (default) |
-| ![](https://heads.discordsrv.com/Scarsz/helm/64)    | `https://heads.discordsrv.com/Scarsz/helm`              |
+| Image                                               | URL                                         |
+|-----------------------------------------------------|---------------------------------------------|
+| ![](https://heads.discordsrv.com/Scarsz/head/64)    | https://heads.discordsrv.com/Scarsz/head    |
+| ![](https://heads.discordsrv.com/Scarsz/overlay/64) | https://heads.discordsrv.com/Scarsz/overlay |
+| ![](https://heads.discordsrv.com/Scarsz/helm/64)    | https://heads.discordsrv.com/Scarsz/helm    |
 
 <sub>The above images are displayed with `/64` to request the head at 64x64 resolution.
 In the above URLs, `Scarsz` could be replaced with the UUID `d7c1db4d-e57b-488b-b8bc-4462fe49a3e8` for the same results.</sub>
