@@ -31,8 +31,8 @@ public class Heads {
     public static int DEFAULT_HEAD_SIZE = 64;
 
     public static Gson GSON = new GsonBuilder()
-            .registerTypeAdapter(Profile.class, new Profile(null, null, null))
-            .registerTypeAdapter(SkinData.class, new SkinData(null, null, null, -1))
+            .registerTypeAdapter(Profile.class, new Profile.Deserializer())
+            .registerTypeAdapter(SkinData.class, new SkinData.Deserializer())
             .create();
 
     public static Services<?> services = new Services<>(
