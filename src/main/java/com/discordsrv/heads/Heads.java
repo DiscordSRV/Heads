@@ -62,7 +62,8 @@ public class Heads {
                     ctx.redirect(target + "/" + type.name().toLowerCase());
                 });
                 path("{target}", () -> {
-                    get(ctx -> ctx.redirect(ctx.pathParam("target") + "/overlay"));
+                    // disabled due to conflicts with static resources
+                    // get(ctx -> ctx.redirect(ctx.pathParam("target") + "/overlay"));
                     path("head", () -> {
                         get(ctx -> handle(ctx, AvatarType.HEAD));
                         get("{size}", ctx -> handle(ctx, AvatarType.HEAD, ctx.pathParamAsClass("size", Integer.class).getOrDefault(DEFAULT_HEAD_SIZE)));

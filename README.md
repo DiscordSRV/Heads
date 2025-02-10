@@ -10,7 +10,6 @@ No frills Minecraft headshot provider. Retrieves profiles & textures directly fr
 - `head` and `overlay` heads are internally rendered as 8x8<sub>px</sub>; `helm` is rendered using 64x64<sub>px</sub> heads to accommodate the scaled `helm` layer.
 - Resulting PNGs from `head` and `overlay` are RGB (no alpha channel/transparency); `helm` uses ARGB (transparency under the scaled up helmet)
 - UUIDs (dashed or non-dashed) are preferred; `usernames -> UUID` mappings are cached for one hour.
-- If a `head`/`overlay`/`helm` is not specified, redirects to `overlay`.
 
 ### Examples
 |Image|URL|
