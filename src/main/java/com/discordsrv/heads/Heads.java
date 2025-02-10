@@ -46,10 +46,11 @@ public class Heads {
             config.staticFiles.add("static");
             config.requestLogger.http((ctx, executionTimeMs) -> {
                 if (ctx.status().equals(HttpStatus.FOUND)) return; // don't log redirects
-                System.out.println(MessageFormat.format("{0}ms \t{1} [{2}] > {3} {4}",
+                System.out.println(MessageFormat.format("{0}ms \t{1} [{2}] {3} {4} @ {5}",
                         Math.round(executionTimeMs),
                         ctx.header("CF-Connecting-IP") != null ? ctx.header("CF-Connecting-IP") : ctx.header("X-Forwarded-For") != null ? ctx.header("X-Forwarded-For") : ctx.ip(),
                         ctx.userAgent() != null ? ctx.userAgent().contains("+https://discordapp.com") ? "Discord" : ctx.userAgent() : "no user agent",
+                        ctx.status().getCode(),
                         ctx.status().getMessage(),
                         ctx.fullUrl()
                 ));
