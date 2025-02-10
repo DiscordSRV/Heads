@@ -25,18 +25,24 @@ public class TextureIO {
         return hasHelmet(texture);
     }
     public static boolean hasHelmet(BufferedImage texture) {
+        if (!texture.getColorModel().hasAlpha()) return false;
+
+        // check each helm pixel to see if there's any non-black, non-transparent pixels
         for (int x = 40; x < 48; x++) {
             for (int y = 8; y < 16; y++) {
-                int pixel = texture.getRGB(x, y);
-                if ((pixel >> 24) != 0) {
-                    return true;
-                }
+                int color = texture.getRGB(x, y);
+                int alpha = (color >> 24) & 0xFF;
+                if (color == Color.BLACK.getRGB() || alpha == 0) continue;
+                return true;
             }
         }
+
+        // no color found in helm area
         return false;
     }
 
     public TextureIO applyHelmet(boolean scale) {
+        if (!hasHelmet()) return this;
         BufferedImage helmetLayer = texture.getSubimage(40, 8, 8, 8);
 
         if (scale) {
