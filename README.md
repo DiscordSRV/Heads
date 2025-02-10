@@ -2,7 +2,7 @@
 No frills Minecraft headshot provider. Retrieves profiles & textures directly from Mojang, falling back to [CraftHead](https://crafthead.net/) if/when issues with Mojang's API are encountered.
 
 ## Usage
-`GET https://heads.discordsrv.com/<uuid|username>/<head|overlay|helm>/<size>`
+`GET https://heads.discordsrv.com/<uuid|username>/<head|overlay|helm>/<size?>`
 - Image types:
     - `head`: plain head from the texture.
     - `overlay`: `head` overlaid with the `helm` layer.
