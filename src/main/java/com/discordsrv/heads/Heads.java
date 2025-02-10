@@ -82,6 +82,7 @@ public class Heads {
                         get(ctx -> handle(ctx, AvatarType.HELM));
                         get("{size}", ctx -> handle(ctx, AvatarType.HELM, ctx.pathParamAsClass("size", Integer.class).getOrDefault(DEFAULT_HEAD_SIZE)));
                     });
+                    get("texture", ctx -> handle(ctx, null));
                 });
             });
         }).start(7070);
@@ -111,13 +112,16 @@ public class Heads {
 
 //            System.out.println("Handling " + avatarType + " for " + (profile == null ? "texture " + texture : "profile " + profile.username()));
             BufferedImage texture = services.getTexture(textureId);
-            TextureIO headIO = new TextureIO(texture);
-            if (avatarType.hasHelmet()) headIO.applyHelmet(avatarType == AvatarType.HELM);
-            if (scaledSize != null && headIO.getHead().getWidth() != scaledSize) headIO.scale(Math.min(scaledSize, 512));
-
             ctx.contentType("image/png");
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            ImageIO.write(headIO.getHead(), "png", outputStream);
+            if (avatarType != null) {
+                TextureIO headIO = new TextureIO(texture);
+                if (avatarType.hasHelmet()) headIO.applyHelmet(avatarType == AvatarType.HELM);
+                if (scaledSize != null && headIO.getHead().getWidth() != scaledSize) headIO.scale(Math.min(scaledSize, 512));
+                ImageIO.write(headIO.getHead(), "png", outputStream);
+            } else {
+                ImageIO.write(texture, "png", outputStream);
+            }
             ctx.result(outputStream.toByteArray());
         } catch (IOException e) {
             throw new RuntimeException(e);
