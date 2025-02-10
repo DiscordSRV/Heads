@@ -65,15 +65,15 @@ public class Heads {
                     get(ctx -> ctx.redirect(ctx.pathParam("target") + "/overlay"));
                     path("head", () -> {
                         get(ctx -> handle(ctx, AvatarType.HEAD));
-                        get("{size}", ctx -> handle(ctx, AvatarType.HEAD, Integer.parseInt(ctx.pathParam("size"))));
+                        get("{size}", ctx -> handle(ctx, AvatarType.HEAD, ctx.pathParamAsClass("size", Integer.class).getOrDefault(DEFAULT_HEAD_SIZE)));
                     });
                     path("overlay", () -> {
                         get(ctx -> handle(ctx, AvatarType.OVERLAY));
-                        get("{size}", ctx -> handle(ctx, AvatarType.OVERLAY, Integer.parseInt(ctx.pathParam("size"))));
+                        get("{size}", ctx -> handle(ctx, AvatarType.OVERLAY, ctx.pathParamAsClass("size", Integer.class).getOrDefault(DEFAULT_HEAD_SIZE)));
                     });
                     path("helm", () -> {
                         get(ctx -> handle(ctx, AvatarType.HELM));
-                        get("{size}", ctx -> handle(ctx, AvatarType.HELM, Integer.parseInt(ctx.pathParam("size"))));
+                        get("{size}", ctx -> handle(ctx, AvatarType.HELM, ctx.pathParamAsClass("size", Integer.class).getOrDefault(DEFAULT_HEAD_SIZE)));
                     });
                 });
             });
