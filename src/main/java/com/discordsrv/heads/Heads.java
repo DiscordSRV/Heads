@@ -11,6 +11,7 @@ import com.google.gson.GsonBuilder;
 import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -43,6 +44,7 @@ public class Heads {
             config.showJavalinBanner = false;
             config.staticFiles.add("static");
             config.requestLogger.http((ctx, executionTimeMs) -> {
+                if (ctx.status().equals(HttpStatus.FOUND)) return; // don't log redirects
                 System.out.println(Math.round(executionTimeMs) + "ms \t" + ctx.ip() + " [" + ctx.userAgent() + "] > " + ctx.status().getMessage() + " " + ctx.fullUrl());
             });
             config.router.apiBuilder(() -> {
