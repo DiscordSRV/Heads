@@ -114,7 +114,7 @@ public class Heads {
             BufferedImage texture = services.getTexture(textureId);
             TextureIO headIO = new TextureIO(texture);
             if (avatarType.hasHelmet()) headIO.applyHelmet(avatarType == AvatarType.HELM);
-            if (scaledSize != null && headIO.getHead().getWidth() != scaledSize) headIO.scale(scaledSize);
+            if (scaledSize != null && headIO.getHead().getWidth() != scaledSize) headIO.scale(Math.min(scaledSize, 512));
 
             ctx.contentType("image/png");
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
