@@ -77,7 +77,7 @@ public class Heads {
     }
 
     public static void handle(Context ctx, AvatarType avatarType) {
-        handle(ctx, avatarType, null);
+        handle(ctx, avatarType, 64);
     }
     public static void handle(Context ctx, AvatarType avatarType, Integer scaledSize) {
         String target = ctx.pathParam("target");
