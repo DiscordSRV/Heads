@@ -30,7 +30,7 @@ public class MojangService implements ProfileSupplier, TextureSupplier {
         if (usernameUuidCache.containsKey(username)) return resolve(usernameUuidCache.get(username));
 
         HttpRequest request = HttpRequest.get("https://api.mojang.com/users/profiles/minecraft/" + username);
-        if (request.code() == 404) throw new NotFoundResponse();
+        if (request.code() == 204 || request.code() == 404) throw new NotFoundResponse();
         if (request.code() / 100 != 2) throw new IOException("Invalid status code " + request.code() + " @ " + request.url());
         UUID uuid = uuidString((String) GSON.fromJson(request.body(), Map.class).get("id"));
         usernameUuidCache.put(username, uuid);
@@ -42,7 +42,7 @@ public class MojangService implements ProfileSupplier, TextureSupplier {
         if (uuidProfileCache.containsKey(uuid)) return uuidProfileCache.get(uuid);
 
         HttpRequest request = HttpRequest.get("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid.toString().replace("-", ""));
-        if (request.code() == 404) throw new NotFoundResponse();
+        if (request.code() == 204 || request.code() == 404) throw new NotFoundResponse();
         if (request.code() / 100 != 2) throw new IOException("Invalid status code " + request.code() + " @ " + request.url());
         Dynamic root = Dynamic.from(GSON.fromJson(request.body(), Map.class));
         String username = root.get("name").asString();
