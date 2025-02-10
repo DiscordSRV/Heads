@@ -51,9 +51,9 @@ public class Heads {
                     // old DiscordSRV heads proxy request
                     // https://heads.discordsrv.com/head.png?texture={texture}&uuid={uuid}&name={username}&overlay
                     AvatarType type = ctx.queryParam("overlay") != null ? AvatarType.OVERLAY : AvatarType.HEAD;
-                    String texture = ctx.queryParam("texture");
-                    UUID uuid = ctx.queryParam("uuid") != null ? UUID.fromString(ctx.queryParam("uuid")) : null;
-                    String username = ctx.queryParam("username");
+                    String texture = ctx.queryParam("texture") != null && !ctx.queryParam("texture").isBlank() ? ctx.queryParam("texture") : null;
+                    UUID uuid = ctx.queryParam("uuid") != null && !ctx.queryParam("uuid").isBlank() ? UUID.fromString(ctx.queryParam("uuid")) : null;
+                    String username = ctx.queryParam("username") != null && !ctx.queryParam("username").isBlank() ? ctx.queryParam("username") : null;
                     String target = Stream.of(texture, uuid, username).filter(Objects::nonNull).findFirst().orElseThrow(BadRequestResponse::new).toString();
                     ctx.redirect(target + "/" + type.name().toLowerCase());
                 });
