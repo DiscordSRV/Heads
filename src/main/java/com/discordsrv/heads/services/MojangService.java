@@ -7,6 +7,7 @@ import com.discordsrv.heads.services.profiles.SkinData;
 import com.discordsrv.heads.services.textures.TextureSupplier;
 import com.github.kevinsawicki.http.HttpRequest;
 import com.google.gson.JsonParseException;
+import io.javalin.http.BadRequestResponse;
 import io.javalin.http.NotFoundResponse;
 import net.jodah.expiringmap.ExpiringMap;
 
@@ -40,6 +41,7 @@ public class MojangService implements ProfileSupplier, TextureSupplier {
     @Override
     public Profile resolve(UUID uuid) throws IOException {
         if (uuidProfileCache.containsKey(uuid)) return uuidProfileCache.get(uuid);
+        if (uuid.version() == 3) throw new BadRequestResponse("Offline mode UUID provided");
 
         HttpRequest request = HttpRequest.get("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid.toString().replace("-", ""));
         if (request.code() == 204 || request.code() == 404) throw new NotFoundResponse();
