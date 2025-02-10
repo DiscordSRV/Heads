@@ -28,6 +28,8 @@ import static io.javalin.apibuilder.ApiBuilder.path;
 public class Heads {
 
     public static boolean DEBUG = false;
+    public static int DEFAULT_HEAD_SIZE = 64;
+
     public static Gson GSON = new GsonBuilder()
             .registerTypeAdapter(Profile.class, new Profile(null, null, null))
             .registerTypeAdapter(SkinData.class, new SkinData(null, null, null, -1))
@@ -79,7 +81,7 @@ public class Heads {
     }
 
     public static void handle(Context ctx, AvatarType avatarType) {
-        handle(ctx, avatarType, 64);
+        handle(ctx, avatarType, DEFAULT_HEAD_SIZE);
     }
     public static void handle(Context ctx, AvatarType avatarType, Integer scaledSize) {
         String target = ctx.pathParam("target");
@@ -107,7 +109,7 @@ public class Heads {
             BufferedImage texture = skinStorage.getTexture(textureId);
             TextureIO headIO = new TextureIO(texture);
             if (avatarType.hasHelmet()) headIO.applyHelmet(avatarType == AvatarType.HELM);
-            if (scaledSize != null) headIO.scale(scaledSize);
+            if (scaledSize != null && headIO.getHead().getWidth() != scaledSize) headIO.scale(scaledSize);
 
             ctx.contentType("image/png");
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
