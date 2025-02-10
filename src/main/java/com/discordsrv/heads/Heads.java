@@ -16,7 +16,6 @@ import io.javalin.http.HttpStatus;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Objects;
@@ -40,7 +39,6 @@ public class Heads {
             new MojangService(),
             new CraftHeadService()
     );
-    public static SkinStorage skinStorage = new SkinStorage(new File("/storage"));
 
     public static void main(String[] args) {
         Javalin.create(config -> {
@@ -114,7 +112,7 @@ public class Heads {
             }
 
 //            System.out.println("Handling " + avatarType + " for " + (profile == null ? "texture " + texture : "profile " + profile.username()));
-            BufferedImage texture = skinStorage.getTexture(textureId);
+            BufferedImage texture = services.getTexture(textureId);
             TextureIO headIO = new TextureIO(texture);
             if (avatarType.hasHelmet()) headIO.applyHelmet(avatarType == AvatarType.HELM);
             if (scaledSize != null && headIO.getHead().getWidth() != scaledSize) headIO.scale(scaledSize);

@@ -5,8 +5,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import static com.discordsrv.heads.Heads.services;
-
 public class SkinStorage {
 
     private final File directory;
@@ -21,10 +19,12 @@ public class SkinStorage {
 
     public BufferedImage getTexture(String textureId) throws IOException {
         File file = getFile(textureId);
-        if (file.exists()) return ImageIO.read(file);
-        BufferedImage texture = services.getTexture(textureId);
-        if (directory.exists()) ImageIO.write(texture, "png", file);
-        return texture;
+        return file.exists() ? ImageIO.read(file) : null;
+    }
+
+    public void saveTexture(String textureId, BufferedImage texture) throws IOException {
+        if (!directory.exists()) return;
+        ImageIO.write(texture, "png", getFile(textureId));
     }
 
     public File getFile(String textureId) {
