@@ -18,6 +18,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -47,7 +48,13 @@ public class Heads {
             config.staticFiles.add("static");
             config.requestLogger.http((ctx, executionTimeMs) -> {
                 if (ctx.status().equals(HttpStatus.FOUND)) return; // don't log redirects
-                System.out.println(Math.round(executionTimeMs) + "ms \t" + ctx.ip() + " [" + ctx.userAgent() + "] > " + ctx.status().getMessage() + " " + ctx.fullUrl());
+                System.out.println(MessageFormat.format("{0}ms \t{1} [{2}] > {3} {4}",
+                        Math.round(executionTimeMs),
+                        ctx.header("X-Forwarded-For") != null ? ctx.header("X-Forwarded-For") : ctx.ip(),
+                        ctx.userAgent().contains("+https://discordapp.com") ? "Discord" : ctx.userAgent(),
+                        ctx.status().getMessage(),
+                        ctx.fullUrl()
+                ));
             });
             config.router.apiBuilder(() -> {
                 get(ctx -> ctx.redirect("https://github.com/DiscordSRV/Heads"));
