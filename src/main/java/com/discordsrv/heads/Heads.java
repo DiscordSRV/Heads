@@ -100,8 +100,6 @@ public class Heads {
             } else if (target.length() == 32 || target.length() == 36) {
                 // uuid
                 profile = services.resolve(uuidString(target));
-            } else {
-                throw new BadRequestResponse("Target '" + target + "' is not a valid username or UUID");
             }
             if (profile != null) {
                 textureId = profile.skinData().textureId();
