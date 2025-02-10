@@ -59,6 +59,7 @@ public class MojangService implements ProfileSupplier, TextureSupplier {
     @Override
     public BufferedImage getTexture(String textureId) throws IOException {
         HttpRequest request = HttpRequest.get("https://textures.minecraft.net/texture/" + textureId);
+        if (request.code() == 404) throw new NotFoundResponse();
         if (request.code() / 100 != 2) throw new IOException("Invalid status code " + request.code() + " @ " + request.url());
         return ImageIO.read(request.stream());
     }
