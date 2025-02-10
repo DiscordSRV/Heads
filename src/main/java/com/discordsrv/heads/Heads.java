@@ -1,14 +1,15 @@
 package com.discordsrv.heads;
 
 import com.discordsrv.heads.services.CraftHeadService;
-import com.discordsrv.heads.services.Services;
 import com.discordsrv.heads.services.MojangService;
+import com.discordsrv.heads.services.Services;
 import com.discordsrv.heads.services.profiles.Profile;
 import com.discordsrv.heads.services.profiles.SkinData;
 import com.discordsrv.heads.services.textures.AvatarType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.javalin.Javalin;
+import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 
 import javax.imageio.ImageIO;
@@ -16,7 +17,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.path;
@@ -44,6 +47,16 @@ public class Heads {
             });
             config.router.apiBuilder(() -> {
                 get(ctx -> ctx.redirect("https://github.com/DiscordSRV/Heads"));
+                get("head.png", ctx -> {
+                    // old DiscordSRV heads proxy request
+                    // https://heads.discordsrv.com/head.png?texture={texture}&uuid={uuid}&name={username}&overlay
+                    AvatarType type = ctx.queryParam("overlay") != null ? AvatarType.OVERLAY : AvatarType.HEAD;
+                    String texture = ctx.queryParam("texture");
+                    UUID uuid = ctx.queryParam("uuid") != null ? UUID.fromString(ctx.queryParam("uuid")) : null;
+                    String username = ctx.queryParam("username");
+                    String target = Stream.of(texture, uuid, username).filter(Objects::nonNull).findFirst().orElseThrow(BadRequestResponse::new).toString();
+                    ctx.redirect(target + "/" + type.name().toLowerCase());
+                });
                 path("{target}", () -> {
                     get(ctx -> ctx.redirect(ctx.pathParam("target") + "/overlay"));
                     path("head", () -> {
