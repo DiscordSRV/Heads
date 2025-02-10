@@ -61,7 +61,7 @@ public class Heads {
                     // https://heads.discordsrv.com/head.png?texture={texture}&uuid={uuid}&name={username}&overlay
                     AvatarType type = ctx.queryParam("overlay") != null ? AvatarType.OVERLAY : AvatarType.HEAD;
                     String texture = ctx.queryParam("texture") != null && !ctx.queryParam("texture").isBlank() ? ctx.queryParam("texture") : null;
-                    UUID uuid = ctx.queryParam("uuid") != null && !ctx.queryParam("uuid").isBlank() ? UUID.fromString(ctx.queryParam("uuid")) : null;
+                    UUID uuid = ctx.queryParam("uuid") != null && !ctx.queryParam("uuid").isBlank() ? uuidString(ctx.queryParam("uuid")) : null;
                     String username = ctx.queryParam("username") != null && !ctx.queryParam("username").isBlank() ? ctx.queryParam("username") : null;
                     String target = Stream.of(texture, uuid, username).filter(Objects::nonNull).findFirst().orElseThrow(BadRequestResponse::new).toString();
                     ctx.redirect(target + "/" + type.name().toLowerCase());
@@ -97,12 +97,11 @@ public class Heads {
             if (target.length() <= 16) {
                 // username
                 profile = services.resolve(target);
-            } else if (target.length() == 32) {
-                // non-dashed uuid
+            } else if (target.length() == 32 || target.length() == 36) {
+                // uuid
                 profile = services.resolve(uuidString(target));
-            } else if (target.length() == 36) {
-                // dashed uuid
-                profile = services.resolve(UUID.fromString(target));
+            } else {
+                throw new BadRequestResponse("Target '" + target + "' is not a valid username or UUID");
             }
             if (profile != null) {
                 textureId = profile.skinData().textureId();
