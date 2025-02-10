@@ -13,14 +13,17 @@ public class SkinStorage {
 
     public SkinStorage(File directory) {
         this.directory = directory;
-        this.directory.mkdirs();
+        if (new File("/.dockerenv").exists()) {
+            // don't bother caching textures unless running in container
+            this.directory.mkdirs();
+        }
     }
 
     public BufferedImage getTexture(String textureId) throws IOException {
         File file = getFile(textureId);
         if (file.exists()) return ImageIO.read(file);
         BufferedImage texture = services.getTexture(textureId);
-        ImageIO.write(texture, "png", file);
+        if (directory.exists()) ImageIO.write(texture, "png", file);
         return texture;
     }
 
