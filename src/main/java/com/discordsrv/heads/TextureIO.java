@@ -59,11 +59,11 @@ public class TextureIO {
 
         if (scale) {
             int headSize = 64; // need a canvas large enough to slightly upscale helmet
-            int padding = 4; // however many pixels on the sides of the head to upscale the helmet onto
-
-            BufferedImage scaledHead = new BufferedImage(headSize + padding * 2, headSize + padding * 2, BufferedImage.TYPE_INT_ARGB);
+            int inset = 4; // however many pixels on the sides of the head to upscale the helmet onto
+            int scaledSize = headSize + inset * 2;
+            BufferedImage scaledHead = new BufferedImage(scaledSize, scaledSize, BufferedImage.TYPE_INT_ARGB);
             Graphics2D graphics = scaledHead.createGraphics();
-            graphics.drawImage(head, padding, padding, headSize, headSize, null);
+            graphics.drawImage(head, inset, inset, headSize, headSize, null);
             graphics.drawImage(helmetLayer, 0, 0, scaledHead.getWidth(), scaledHead.getHeight(), null);
             graphics.dispose();
             head = scaledHead;
@@ -76,12 +76,15 @@ public class TextureIO {
     }
 
     public TextureIO scale(int size) {
-        BufferedImage scaledHead = new BufferedImage(size, size, head.getType());
-        Graphics2D graphics = scaledHead.createGraphics();
-        graphics.drawImage(head, 0, 0, scaledHead.getWidth(), scaledHead.getHeight(), null);
-        graphics.dispose();
-        head = scaledHead;
+        head = scale(head, size);
         return this;
+    }
+    public static BufferedImage scale(BufferedImage image, int size) {
+        BufferedImage scaled = new BufferedImage(size, size, image.getType());
+        Graphics2D graphics = scaled.createGraphics();
+        graphics.drawImage(image, 0, 0, scaled.getWidth(), scaled.getHeight(), null);
+        graphics.dispose();
+        return scaled;
     }
 
     public BufferedImage getTexture() {

@@ -12,6 +12,7 @@ import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
+import org.w3c.dom.Text;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -127,11 +128,7 @@ public class Heads {
                     int min = 64;
                     int max = 512;
                     scaledSize = Math.min(Math.max(((scaledSize + min / 2) / min) * min, min), max);
-                    BufferedImage scaled = new BufferedImage(scaledSize, scaledSize, BufferedImage.TYPE_INT_ARGB);
-                    Graphics2D graphics = scaled.createGraphics();
-                    graphics.drawImage(texture, 0, 0, scaled.getWidth(), scaled.getHeight(), null);
-                    graphics.dispose();
-                    texture = scaled;
+                    texture = TextureIO.scale(texture, scaledSize);
                 }
                 ImageIO.write(texture, "png", outputStream);
             }
