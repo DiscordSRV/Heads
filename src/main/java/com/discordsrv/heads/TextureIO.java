@@ -80,7 +80,8 @@ public class TextureIO {
         return this;
     }
     public static BufferedImage scale(BufferedImage image, int size) {
-        BufferedImage scaled = new BufferedImage(size, size, image.getType());
+        float heightScaling = (float) image.getHeight() / image.getWidth();
+        BufferedImage scaled = new BufferedImage(size, (int) (size * heightScaling), image.getType());
         Graphics2D graphics = scaled.createGraphics();
         graphics.drawImage(image, 0, 0, scaled.getWidth(), scaled.getHeight(), null);
         graphics.dispose();
