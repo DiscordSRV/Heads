@@ -72,12 +72,12 @@ public class Services<T extends ProfileSupplier & TextureSupplier> implements Pr
 
     @Override
     public BufferedImage getTexture(String textureId) throws IOException {
-        BufferedImage cachedTexture = skinStorage.getTexture(textureId);
-        if (cachedTexture != null) return cachedTexture;
+        BufferedImage texture = skinStorage.getTexture(textureId);
+        if (texture != null) return texture;
 
         for (T supplier : suppliers) {
             try {
-                BufferedImage texture = supplier.getTexture(textureId);
+                texture = supplier.getTexture(textureId);
                 if (DEBUG) System.out.println("[" + serviceName(supplier) + "] Retrieved texture " + textureId);
                 skinStorage.saveTexture(textureId, texture);
                 return texture;
