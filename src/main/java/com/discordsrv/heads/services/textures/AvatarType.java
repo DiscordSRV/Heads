@@ -13,7 +13,7 @@ public enum AvatarType {
     OVERLAY(true),
 
     /**
-     * The head of the skin with the helm overlaid after being scaled up 1.5x, on a transparent background
+     * The head of the skin with the helm overlaid after being slightly scaled up, on a transparent background
      */
     HELM(true);
 
