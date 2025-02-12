@@ -3,7 +3,9 @@ package com.discordsrv.heads;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.Objects;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("UnusedReturnValue")
 public class TextureIO {
@@ -27,13 +29,23 @@ public class TextureIO {
     public static boolean hasHelmet(BufferedImage texture) {
         if (!texture.getColorModel().hasAlpha()) return false;
 
-        // check each helm pixel to see if there's any non-black, non-transparent pixels
+        // sample colors from the top-left of the skin to find the most common "background" color
+        Map<Integer, AtomicInteger> colors = new HashMap<>();
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                colors.computeIfAbsent(texture.getRGB(x, y), k -> new AtomicInteger()).incrementAndGet();
+            }
+        }
+        int backgroundColor = colors.entrySet().stream().min(Comparator.comparingInt(o -> o.getValue().get())).get().getKey();
+
+        // check each helm pixel to see if there's any non-transparent pixels that also don't match a detected background color
         for (int x = 40; x < 48; x++) {
             for (int y = 8; y < 16; y++) {
                 int color = texture.getRGB(x, y);
                 int alpha = (color >> 24) & 0xFF;
-                if (color == Color.BLACK.getRGB() || alpha == 0) continue;
-                return true;
+                if (color != backgroundColor && alpha != 0) {
+                    return true;
+                }
             }
         }
 
