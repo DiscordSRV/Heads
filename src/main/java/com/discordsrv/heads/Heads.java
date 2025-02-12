@@ -14,6 +14,7 @@ import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -82,7 +83,10 @@ public class Heads {
                         get(ctx -> handle(ctx, AvatarType.HELM));
                         get("{size}", ctx -> handle(ctx, AvatarType.HELM, ctx.pathParamAsClass("size", Integer.class).getOrDefault(DEFAULT_HEAD_SIZE)));
                     });
-                    get("texture", ctx -> handle(ctx, null));
+                    path("texture", () -> {
+                        get(ctx -> handle(ctx, null));
+                        get("{size}", ctx -> handle(ctx, null, ctx.pathParamAsClass("size", Integer.class).getOrDefault(64)));
+                    });
                 });
             });
         }).start(7070);
@@ -110,7 +114,6 @@ public class Heads {
                 textureId = target;
             }
 
-//            System.out.println("Handling " + avatarType + " for " + (profile == null ? "texture " + texture : "profile " + profile.username()));
             BufferedImage texture = services.getTexture(textureId);
             ctx.contentType("image/png");
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -120,6 +123,16 @@ public class Heads {
                 if (scaledSize != null && headIO.getHead().getWidth() != scaledSize) headIO.scale(Math.min(scaledSize, 512));
                 ImageIO.write(headIO.getHead(), "png", outputStream);
             } else {
+                if (scaledSize != null) {
+                    int min = 64;
+                    int max = 512;
+                    scaledSize = Math.min(Math.max(((scaledSize + min / 2) / min) * min, min), max);
+                    BufferedImage scaled = new BufferedImage(scaledSize, scaledSize, BufferedImage.TYPE_INT_ARGB);
+                    Graphics2D graphics = scaled.createGraphics();
+                    graphics.drawImage(texture, 0, 0, scaled.getWidth(), scaled.getHeight(), null);
+                    graphics.dispose();
+                    texture = scaled;
+                }
                 ImageIO.write(texture, "png", outputStream);
             }
             ctx.result(outputStream.toByteArray());
