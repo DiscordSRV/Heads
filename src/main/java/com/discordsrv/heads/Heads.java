@@ -109,13 +109,14 @@ public class Heads {
                 // uuid
                 UUID uuid = uuidString(target);
                 if (uuid.version() == 4) profile = services.resolve(uuid);
-            }
-            if (profile != null) {
-                // found a valid profile, use its texture
-                textureId = profile.skinData().textureId();
-            } else if (textureId == null) {
-                // assume target is a texture ID since we couldn't match it to a profile
+            } else {
+                // target isn't a username, and it's not an uuid... so probably a texture id?
                 textureId = target;
+            }
+
+            if (profile != null) {
+                // target matched to a valid profile, use its texture
+                textureId = profile.skinData().textureId();
             }
 
             BufferedImage texture = services.getTexture(textureId);
