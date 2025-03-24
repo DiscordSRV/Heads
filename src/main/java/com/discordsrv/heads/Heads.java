@@ -31,6 +31,7 @@ public class Heads {
 
     public static boolean DEBUG = false;
     public static int DEFAULT_HEAD_SIZE = 64;
+    public static String DEFAULT_HEAD_TEXTURE_ID = "9f954e93fe1640f47e916c26622eacf92fd4586371f5f07fd9a7ddedaf4"; // Steve
 
     public static Gson GSON = new GsonBuilder()
             .registerTypeAdapter(Profile.class, new Profile.Deserializer())
@@ -99,19 +100,21 @@ public class Heads {
     public static void handle(Context ctx, AvatarType avatarType, Integer scaledSize) {
         String target = ctx.pathParam("target");
         try {
-            String textureId;
+            String textureId = DEFAULT_HEAD_TEXTURE_ID;
             Profile profile = null;
             if (target.length() <= 16) {
                 // username
                 profile = services.resolve(target);
             } else if (target.length() == 32 || target.length() == 36) {
                 // uuid
-                profile = services.resolve(uuidString(target));
+                UUID uuid = uuidString(target);
+                if (uuid.version() == 4) profile = services.resolve(uuid);
             }
             if (profile != null) {
+                // found a valid profile, use its texture
                 textureId = profile.skinData().textureId();
-            } else {
-                // texture id
+            } else if (textureId == null) {
+                // assume target is a texture ID since we couldn't match it to a profile
                 textureId = target;
             }
 
