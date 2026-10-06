@@ -1,5 +1,5 @@
 # DiscordSRV Heads
-No frills Minecraft headshot provider. Retrieves profiles & textures directly from Mojang, falling back to [CraftHead](https://crafthead.net/) if/when issues with Mojang's API are encountered.
+No frills Minecraft headshot provider. Retrieves profiles & textures directly from Mojang, falling back to [CraftHead](https://crafthead.net/) if/when issues with Mojang's API are encountered. Bedrock players joining through [Geyser](https://geysermc.org/) are supported via the [GeyserMC global API](https://api.geysermc.org/).
 
 ## Usage
 ```
@@ -8,7 +8,7 @@ GET https://heads.discordsrv.com/<target>/<type>[/<size>][?yaw=<degrees>&pitch=<
 
 | Part           | Description                                                                                                                                                                                                      |
 |----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `<target>`     | A UUID (dashed or non-dashed), a username, or a texture ID. UUIDs are preferred; `username -> UUID` mappings are cached for one hour. Offline-mode (non-v4) UUIDs resolve to the default Steve texture.          |
+| `<target>`     | A UUID (dashed or non-dashed), a username, or a texture ID. UUIDs are preferred; `username -> UUID` mappings are cached for one hour. See [offline UUIDs](#offline-uuids) for non-Mojang UUIDs.                  |
 | `<type>`       | One of the [image types](#image-types) below.                                                                                                                                                                    |
 | `<size>`       | Width of the resulting image in pixels, defaulting to `64` and capped at `512`. Non-square images keep their aspect ratio. For `texture`, it's rounded to the nearest multiple of `64` (between `64` and `512`). |
 | `yaw`, `pitch` | Camera angles for 3D types (`skull` and `player`). See [camera angles](#camera-angles).                                                                                                                          |
@@ -16,6 +16,11 @@ GET https://heads.discordsrv.com/<target>/<type>[/<size>][?yaw=<degrees>&pitch=<
 All images are PNGs. `head` and `overlay` are RGB (no transparency); everything else is ARGB with a transparent background.
 
 Slim (Alex model) skins are rendered with 3px wide arms in `bust`, `body` and `player`. The model comes from the player's profile; when the target is a texture ID, it's detected from the texture instead.
+
+### Offline UUIDs
+
+- **Floodgate UUIDs** (Bedrock players joining through [Geyser](https://geysermc.org/)), such as `00000000-0000-0000-0009-01f64f65c7c3`, carry the player's Xbox ID (XUID) in their last 16 hex digits. Their skin is fetched from the [GeyserMC global API](https://api.geysermc.org/), which only has skins for players it has seen join a Geyser server. Players it has no skin for get the default Steve texture.
+- **Other offline-mode UUIDs** (any other version than v4) always resolve to the default Steve texture.
 
 ## Image types
 <sub>Examples are displayed with `/64` to request them at 64px wide. `Scarsz` could be replaced with the UUID `d7c1db4d-e57b-488b-b8bc-4462fe49a3e8` for the same results.</sub>

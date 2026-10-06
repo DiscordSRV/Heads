@@ -26,6 +26,7 @@ import static com.discordsrv.heads.Heads.DEBUG;
 public class Services<T extends ProfileSupplier & TextureSupplier> implements ProfileSupplier, TextureSupplier {
 
     private final List<T> suppliers;
+    private final GeyserService geyserService = new GeyserService();
     private final SkinStorage skinStorage = new SkinStorage(new File("/storage"));
     private final Map<String, Profile> usernameProfileCache = ExpiringMap.builder().expiration(1, TimeUnit.HOURS).build();
     private final Map<UUID, Profile> uuidProfileCache = ExpiringMap.builder().expiration(1, TimeUnit.HOURS).build();
@@ -50,7 +51,17 @@ public class Services<T extends ProfileSupplier & TextureSupplier> implements Pr
         Profile profile = uuidProfileCache.get(uuid);
         if (profile != null) return profile;
 
-        profile = first("UUID " + uuid, supplier -> supplier.resolve(uuid));
+        if (GeyserService.isFloodgate(uuid)) {
+            try {
+                profile = geyserService.resolve(uuid);
+                if (DEBUG) System.out.println("[Geyser] Resolved UUID " + uuid);
+            } catch (Exception e) {
+                System.err.println("[Geyser] Failed to resolve UUID " + uuid);
+                e.printStackTrace();
+            }
+        } else {
+            profile = first("UUID " + uuid, supplier -> supplier.resolve(uuid));
+        }
         if (profile != null) uuidProfileCache.put(uuid, profile);
         return profile;
     }

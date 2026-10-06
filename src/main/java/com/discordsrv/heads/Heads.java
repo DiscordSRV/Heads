@@ -2,6 +2,7 @@ package com.discordsrv.heads;
 
 import com.discordsrv.heads.renderers.AvatarType;
 import com.discordsrv.heads.services.CraftHeadService;
+import com.discordsrv.heads.services.GeyserService;
 import com.discordsrv.heads.services.MojangService;
 import com.discordsrv.heads.services.Services;
 import com.discordsrv.heads.services.profiles.Profile;
@@ -123,7 +124,7 @@ public class Heads {
                 profile = services.resolve(target);
             } else if (target.length() == 32 || target.length() == 36) {
                 UUID uuid = parseUuid(target);
-                if (uuid != null && uuid.version() == 4) profile = services.resolve(uuid);
+                if (uuid != null && (uuid.version() == 4 || GeyserService.isFloodgate(uuid))) profile = services.resolve(uuid);
             } else {
                 textureId = target;
             }
