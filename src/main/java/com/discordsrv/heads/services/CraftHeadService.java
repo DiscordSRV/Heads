@@ -3,8 +3,6 @@ package com.discordsrv.heads.services;
 import com.discordsrv.heads.services.profiles.Profile;
 import com.discordsrv.heads.services.profiles.ProfileSupplier;
 import com.discordsrv.heads.services.textures.TextureSupplier;
-import com.github.kevinsawicki.http.HttpRequest;
-import io.javalin.http.NotFoundResponse;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -15,28 +13,23 @@ import static com.discordsrv.heads.Heads.GSON;
 
 public class CraftHeadService implements ProfileSupplier, TextureSupplier {
 
-    public Profile resolveProfile(String target) throws IOException {
-        HttpRequest request = HttpRequest.get("https://crafthead.net/profile/" + target);
-        if (request.code() == 404) throw new NotFoundResponse();
-        if (request.code() / 100 != 2) throw new IOException("Invalid status code " + request.code() + " @ " + request.url());
-        String body = request.body();
-        return GSON.fromJson(body, Profile.class);
-    }
     @Override
     public Profile resolve(String username) throws IOException {
         return resolveProfile(username);
     }
+
     @Override
     public Profile resolve(UUID uuid) throws IOException {
         return resolveProfile(uuid.toString());
     }
 
+    private Profile resolveProfile(String target) throws IOException {
+        return GSON.fromJson(Services.get("https://crafthead.net/profile/" + target).body(), Profile.class);
+    }
+
     @Override
     public BufferedImage getTexture(String textureId) throws IOException {
-        HttpRequest request = HttpRequest.get("https://crafthead.net/skin/" + textureId);
-        if (request.code() == 404) throw new NotFoundResponse();
-        if (request.code() / 100 != 2) throw new IOException("Invalid status code " + request.code() + " @ " + request.url());
-        return ImageIO.read(request.stream());
+        return ImageIO.read(Services.get("https://crafthead.net/skin/" + textureId).stream());
     }
 
 }

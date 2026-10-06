@@ -7,9 +7,12 @@ import java.util.Base64;
 import java.util.UUID;
 
 import static com.discordsrv.heads.Heads.GSON;
-import static com.discordsrv.heads.Heads.uuidString;
+import static com.discordsrv.heads.Heads.parseUuid;
 
-public record SkinData(UUID profileId, String profileName, String textureId, long timestamp) {
+/**
+ * @param slim whether the skin uses the slim (Alex) model, with 3 px wide arms
+ */
+public record SkinData(UUID profileId, String profileName, String textureId, boolean slim, long timestamp) {
 
     public static SkinData deserializeBase64(String base64) {
         return deserializeJson(new String(Base64.getDecoder().decode(base64)));
@@ -22,21 +25,15 @@ public record SkinData(UUID profileId, String profileName, String textureId, lon
 
         @Override
         public SkinData deserialize(JsonElement jsonElement, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            /**
-             *         Dynamic root = Dynamic.from(jsonElement.getAsJsonObject().asMap());
-             *         return new SkinData(
-             *                 UUIDUtil.fromString(root.get("profileId").asString()),
-             *                 root.get("profileName").asString(),
-             *                 root.dget("textures.SKIN.url").asString().replace("http://textures.minecraft.net/texture/", ""),
-             *                 root.get("timestamp").as(Long.class)
-             *         );
-             */
-
             JsonObject root = jsonElement.getAsJsonObject();
+            JsonObject skin = root.get("textures").getAsJsonObject().get("SKIN").getAsJsonObject();
+            JsonObject metadata = skin.has("metadata") ? skin.getAsJsonObject("metadata") : null;
+            boolean slim = metadata != null && metadata.has("model") && metadata.get("model").getAsString().equals("slim");
             return new SkinData(
-                    uuidString(root.get("profileId").getAsString()),
+                    parseUuid(root.get("profileId").getAsString()),
                     root.get("profileName").getAsString(),
-                    root.get("textures").getAsJsonObject().get("SKIN").getAsJsonObject().get("url").getAsString().replace("http://textures.minecraft.net/texture/", ""),
+                    skin.get("url").getAsString().replace("http://textures.minecraft.net/texture/", ""),
+                    slim,
                     root.get("timestamp").getAsLong()
             );
         }

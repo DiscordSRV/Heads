@@ -15,7 +15,6 @@ dependencies {
     implementation("org.slf4j:slf4j-jdk14:2.0.16")
     implementation("com.github.kevinsawicki:http-request:6.0")
     implementation("com.google.code.gson:gson:2.12.1")
-    implementation("com.github.alexheretic:dynamics:4.0")
     implementation("net.jodah:expiringmap:0.5.11")
 }
 

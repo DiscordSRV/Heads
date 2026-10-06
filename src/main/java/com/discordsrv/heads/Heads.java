@@ -1,21 +1,20 @@
 package com.discordsrv.heads;
 
+import com.discordsrv.heads.renderers.AvatarType;
 import com.discordsrv.heads.services.CraftHeadService;
 import com.discordsrv.heads.services.MojangService;
 import com.discordsrv.heads.services.Services;
 import com.discordsrv.heads.services.profiles.Profile;
 import com.discordsrv.heads.services.profiles.SkinData;
-import com.discordsrv.heads.services.textures.AvatarType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
-import org.w3c.dom.Text;
+import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,15 +29,16 @@ import static io.javalin.apibuilder.ApiBuilder.path;
 public class Heads {
 
     public static boolean DEBUG = false;
-    public static int DEFAULT_HEAD_SIZE = 64;
-    public static String DEFAULT_HEAD_TEXTURE_ID = "9f954e93fe1640f47e916c26622eacf92fd4586371f5f07fd9a7ddedaf4"; // Steve
+    public static final int DEFAULT_SIZE = 64;
+    public static final int MAX_SIZE = 512;
+    public static final String DEFAULT_HEAD_TEXTURE_ID = "9f954e93fe1640f47e916c26622eacf92fd4586371f5f07fd9a7ddedaf4"; // Steve
 
-    public static Gson GSON = new GsonBuilder()
+    public static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(Profile.class, new Profile.Deserializer())
             .registerTypeAdapter(SkinData.class, new SkinData.Deserializer())
             .create();
 
-    public static Services<?> services = new Services<>(
+    public static final Services<?> services = new Services<>(
             new MojangService(),
             new CraftHeadService()
     );
@@ -48,11 +48,11 @@ public class Heads {
             config.showJavalinBanner = false;
             config.staticFiles.add("static");
             config.requestLogger.http((ctx, executionTimeMs) -> {
-                if (ctx.status().equals(HttpStatus.FOUND)) return; // don't log redirects
+                if (ctx.status().equals(HttpStatus.FOUND)) return;
                 System.out.println(MessageFormat.format("{0}ms \t{1} [{2}] {3} {4} @ {5}",
                         Math.round(executionTimeMs),
-                        ctx.header("CF-Connecting-IP") != null ? ctx.header("CF-Connecting-IP") : ctx.header("X-Forwarded-For") != null ? ctx.header("X-Forwarded-For") : ctx.ip(),
-                        ctx.userAgent() != null ? ctx.userAgent().contains("+https://discordapp.com") ? "Discord" : ctx.userAgent() : "no user agent",
+                        clientIp(ctx),
+                        clientName(ctx),
                         ctx.status().getCode(),
                         ctx.status().getMessage(),
                         ctx.fullUrl()
@@ -61,92 +61,141 @@ public class Heads {
             config.router.apiBuilder(() -> {
                 get(ctx -> ctx.redirect("https://github.com/DiscordSRV/Heads"));
                 get("head.png", ctx -> {
-                    // old DiscordSRV heads proxy request
-                    // https://heads.discordsrv.com/head.png?texture={texture}&uuid={uuid}&name={name}&overlay
+                    // legacy DiscordSRV heads proxy: ?texture=&uuid=&name=&overlay
                     AvatarType type = ctx.queryParam("overlay") != null ? AvatarType.OVERLAY : AvatarType.HEAD;
-                    String texture = ctx.queryParam("texture") != null && !ctx.queryParam("texture").isBlank() && !ctx.queryParam("texture").equals("{texture}") ? ctx.queryParam("texture") : null;
-                    UUID uuid = ctx.queryParam("uuid") != null && !ctx.queryParam("uuid").isBlank() && !ctx.queryParam("uuid").equals("{uuid}") ? uuidString(ctx.queryParam("uuid")) : null;
-                    String username = ctx.queryParam("name") != null && !ctx.queryParam("name").isBlank() && !ctx.queryParam("name").equals("{name}") ? ctx.queryParam("name") : null;
-                    String target = Stream.of(texture, uuid, username).filter(Objects::nonNull).findFirst().orElseThrow(BadRequestResponse::new).toString();
+                    String uuid = param(ctx, "uuid");
+                    String target = Stream.of(param(ctx, "texture"), uuid != null ? parseUuid(uuid) : null, param(ctx, "name"))
+                            .filter(Objects::nonNull).findFirst().orElseThrow(BadRequestResponse::new).toString();
                     ctx.redirect(target + "/" + type.name().toLowerCase());
                 });
                 path("{target}", () -> {
-                    // disabled due to conflicts with static resources
-                    // get(ctx -> ctx.redirect(ctx.pathParam("target") + "/overlay"));
-                    path("head", () -> {
-                        get(ctx -> handle(ctx, AvatarType.HEAD));
-                        get("{size}", ctx -> handle(ctx, AvatarType.HEAD, ctx.pathParamAsClass("size", Integer.class).getOrDefault(DEFAULT_HEAD_SIZE)));
-                    });
-                    path("overlay", () -> {
-                        get(ctx -> handle(ctx, AvatarType.OVERLAY));
-                        get("{size}", ctx -> handle(ctx, AvatarType.OVERLAY, ctx.pathParamAsClass("size", Integer.class).getOrDefault(DEFAULT_HEAD_SIZE)));
-                    });
-                    path("helm", () -> {
-                        get(ctx -> handle(ctx, AvatarType.HELM));
-                        get("{size}", ctx -> handle(ctx, AvatarType.HELM, ctx.pathParamAsClass("size", Integer.class).getOrDefault(DEFAULT_HEAD_SIZE)));
-                    });
-                    path("texture", () -> {
-                        get(ctx -> handle(ctx, null));
-                        get("{size}", ctx -> handle(ctx, null, ctx.pathParamAsClass("size", Integer.class).getOrDefault(64)));
-                    });
+                    avatar("head", AvatarType.HEAD);
+                    avatar("overlay", AvatarType.OVERLAY);
+                    avatar("helm", AvatarType.HELM);
+
+                    avatar("bust/overlay", AvatarType.BUST_OVERLAY);
+                    avatar("bust/helm", AvatarType.BUST_HELM);
+                    avatar("bust", AvatarType.BUST);
+
+                    avatar("body/overlay", AvatarType.BODY_OVERLAY);
+                    avatar("body/helm", AvatarType.BODY_HELM);
+                    avatar("body", AvatarType.BODY);
+
+                    avatar("skull/isometric/left/helm", AvatarType.SKULL_ISOMETRIC_HELM);
+                    avatar("skull/isometric/left", AvatarType.SKULL_ISOMETRIC);
+                    avatar("skull/isometric/right/helm", AvatarType.SKULL_ISOMETRIC_RIGHT_HELM);
+                    avatar("skull/isometric/right", AvatarType.SKULL_ISOMETRIC_RIGHT);
+                    avatar("skull/isometric/helm", AvatarType.SKULL_ISOMETRIC_HELM);
+                    avatar("skull/isometric", AvatarType.SKULL_ISOMETRIC);
+                    avatar("skull/left/helm", AvatarType.SKULL_HELM);
+                    avatar("skull/left", AvatarType.SKULL);
+                    avatar("skull/right/helm", AvatarType.SKULL_RIGHT_HELM);
+                    avatar("skull/right", AvatarType.SKULL_RIGHT);
+                    avatar("skull/helm", AvatarType.SKULL_HELM);
+                    avatar("skull", AvatarType.SKULL);
+
+                    avatar("player/left", AvatarType.PLAYER);
+                    avatar("player/right", AvatarType.PLAYER_RIGHT);
+                    avatar("player", AvatarType.PLAYER);
+
+                    avatar("texture", null);
                 });
             });
         }).start(7070);
     }
 
-    public static void handle(Context ctx, AvatarType avatarType) {
-        handle(ctx, avatarType, DEFAULT_HEAD_SIZE);
+    /**
+     * Registers {@code path} and {@code path/{size}}, rendering the given type, or the raw texture if it's null.
+     */
+    private static void avatar(String path, @Nullable AvatarType avatarType) {
+        get(path + "/{size}", ctx -> handle(ctx, avatarType, ctx.pathParamAsClass("size", Integer.class).getOrDefault(DEFAULT_SIZE)));
+        get(path, ctx -> handle(ctx, avatarType, DEFAULT_SIZE));
     }
-    public static void handle(Context ctx, AvatarType avatarType, Integer scaledSize) {
+
+    private static void handle(Context ctx, @Nullable AvatarType avatarType, int size) {
         String target = ctx.pathParam("target");
+        Double yaw = angleParam(ctx, "yaw", Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        Double pitch = angleParam(ctx, "pitch", -90, 90);
         try {
             String textureId = DEFAULT_HEAD_TEXTURE_ID;
             Profile profile = null;
             if (target.length() <= 16) {
-                // username
                 profile = services.resolve(target);
             } else if (target.length() == 32 || target.length() == 36) {
-                // uuid
-                UUID uuid = uuidString(target);
-                if (uuid.version() == 4) profile = services.resolve(uuid);
+                UUID uuid = parseUuid(target);
+                if (uuid != null && uuid.version() == 4) profile = services.resolve(uuid);
             } else {
-                // target isn't a username, and it's not an uuid... so probably a texture id?
                 textureId = target;
             }
-
-            if (profile != null) {
-                // target matched to a valid profile, use its texture
-                textureId = profile.skinData().textureId();
-            }
+            if (profile != null) textureId = profile.skinData().textureId();
 
             BufferedImage texture = services.getTexture(textureId);
-            ctx.contentType("image/png");
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            BufferedImage result;
             if (avatarType != null) {
-                TextureIO headIO = new TextureIO(texture);
-                if (avatarType.hasHelmet()) headIO.applyHelmet(avatarType == AvatarType.HELM);
-                if (scaledSize != null && headIO.getHead().getWidth() != scaledSize) headIO.scale(Math.min(scaledSize, 512));
-                ImageIO.write(headIO.getHead(), "png", outputStream);
+                // Prefer the profile's declared model; texture-only requests have to guess from the texture
+                boolean slim = profile != null ? profile.skinData().slim() : SkinUtil.isSlim(texture);
+                result = avatarType.createRenderer(yaw, pitch, slim).render(texture);
+                if (result.getWidth() != size) result = SkinUtil.scale(result, Math.min(size, MAX_SIZE));
             } else {
-                if (scaledSize != null) {
-                    int min = 64;
-                    int max = 512;
-                    scaledSize = Math.min(Math.max(((scaledSize + min / 2) / min) * min, min), max);
-                    texture = TextureIO.scale(texture, scaledSize);
-                }
-                ImageIO.write(texture, "png", outputStream);
+                // Raw textures are only scaled by whole multiples of the 64 px texture width
+                int step = 64;
+                result = SkinUtil.scale(texture, Math.clamp(((size + step / 2) / step) * step, step, MAX_SIZE));
             }
-            ctx.result(outputStream.toByteArray());
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            ImageIO.write(result, "png", out);
+            ctx.contentType("image/png");
+            ctx.result(out.toByteArray());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static UUID uuidString(String uuid) {
-        if (uuid.length() == 32) {
-            uuid = uuid.replaceFirst("(.{8})(.{4})(.{4})(.{4})(.{12})", "$1-$2-$3-$4-$5");
-        }
-        return uuid.length() == 36 ? UUID.fromString(uuid) : null;
+    private static String clientIp(Context ctx) {
+        String ip = ctx.header("CF-Connecting-IP");
+        if (ip == null) ip = ctx.header("X-Forwarded-For");
+        return ip != null ? ip : ctx.ip();
     }
 
+    private static String clientName(Context ctx) {
+        String userAgent = ctx.userAgent();
+        if (userAgent == null) return "no UA";
+        return userAgent.contains("+https://discordapp.com") ? "Discord" : userAgent;
+    }
+
+    /**
+     * An optional query parameter, or null if it's blank or an unfilled "{name}" placeholder.
+     */
+    @Nullable
+    private static String param(Context ctx, String name) {
+        String v = ctx.queryParam(name);
+        return (v != null && !v.isBlank() && !v.equals("{" + name + "}")) ? v : null;
+    }
+
+    /**
+     * Parses an optional angle query parameter in degrees, rejecting values that aren't finite or are outside [min, max].
+     */
+    @Nullable
+    private static Double angleParam(Context ctx, String name, double min, double max) {
+        String value = param(ctx, name);
+        if (value == null) return null;
+        double angle;
+        try {
+            angle = Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            throw new BadRequestResponse(name + " must be a number");
+        }
+        if (!Double.isFinite(angle)) throw new BadRequestResponse(name + " must be a finite number");
+        if (angle < min || angle > max) throw new BadRequestResponse(name + " must be between " + min + " and " + max);
+        return angle;
+    }
+
+    /**
+     * Parses a dashed or non-dashed UUID, or returns null if it's neither length.
+     */
+    @Nullable
+    public static UUID parseUuid(String uuid) {
+        if (uuid.length() == 32) uuid = uuid.replaceFirst("(.{8})(.{4})(.{4})(.{4})(.{12})", "$1-$2-$3-$4-$5");
+        return uuid.length() == 36 ? UUID.fromString(uuid) : null;
+    }
 }
