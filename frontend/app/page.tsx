@@ -76,7 +76,7 @@ export default function Home() {
         <div className="container nav-inner">
           <a href="#" className="brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={render(EXAMPLE_TARGET, { family: "head", helmet: "helm" }, 64)} alt="" width={28} height={28} />
+            <img src="/favicon.ico" alt="" width={28} height={28} />
             DiscordSRV Heads
           </a>
           <nav>
