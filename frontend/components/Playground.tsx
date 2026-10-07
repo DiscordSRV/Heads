@@ -80,6 +80,8 @@ const FIT_PADDING = 32;
 type Fit = "fit" | "actual";
 
 const SPIN_STEP = 10;
+/** Minimum time per spin frame, so frames from the browser cache don't spin at render speed. */
+const SPIN_FRAME_MS = 50;
 
 export function Playground() {
   const { target, setTarget, options, setOptions, setExampleTarget } = usePlayground();
@@ -109,12 +111,24 @@ export function Playground() {
     if (!angled) setSpinning(false);
   }, [angled]);
 
-  const spinStep = () => setOptions((o) => ({ ...o, yaw: wrapYaw((o.yaw ?? defaultAngles(o).yaw) + SPIN_STEP) }));
+  const spinTimer = useRef<number | undefined>(undefined);
+  const lastSpinStep = useRef(0);
+  useEffect(() => {
+    if (spinFast) return () => clearTimeout(spinTimer.current);
+  }, [spinFast]);
+
+  const spinStep = () => {
+    lastSpinStep.current = performance.now();
+    setOptions((o) => ({ ...o, yaw: wrapYaw((o.yaw ?? defaultAngles(o).yaw) + SPIN_STEP) }));
+  };
   // Each step waits for the previous frame to load, so spinning never queues up requests
   const onLoaded = (loadedPath: string) => {
     // A target that renders is valid, so the examples elsewhere on the page switch to it
     setExampleTarget(targetOfPath(loadedPath));
-    if (spinFast) spinStep();
+    if (spinFast) {
+      const wait = Math.max(0, SPIN_FRAME_MS - (performance.now() - lastSpinStep.current));
+      spinTimer.current = window.setTimeout(spinStep, wait);
+    }
   };
 
   return (
