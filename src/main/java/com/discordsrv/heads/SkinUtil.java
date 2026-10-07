@@ -81,6 +81,53 @@ public final class SkinUtil {
         return scaled;
     }
 
+    /**
+     * Resizes an image to the given width with a box filter: each output pixel averages every source pixel it
+     * covers, weighted by coverage. Colors are averaged premultiplied by alpha, so transparent pixels don't darken
+     * edges. Unlike {@link #scale}, shrinking anti-aliases edges instead of stairstepping them, and enlarging only
+     * blends where source pixels meet.
+     */
+    public static BufferedImage smoothScale(BufferedImage image, int width) {
+        int sw = image.getWidth(), sh = image.getHeight();
+        int height = Math.max(1, (int) (width * ((float) sh / sw)));
+        double fx = (double) sw / width, fy = (double) sh / height;
+        int[] src = image.getRGB(0, 0, sw, sh, null, 0, sw);
+        int[] out = new int[width * height];
+
+        for (int y = 0; y < height; y++) {
+            double y0 = y * fy, y1 = y0 + fy;
+            int syEnd = Math.min(sh, (int) Math.ceil(y1));
+            for (int x = 0; x < width; x++) {
+                double x0 = x * fx, x1 = x0 + fx;
+                int sxEnd = Math.min(sw, (int) Math.ceil(x1));
+                double a = 0, r = 0, g = 0, b = 0, total = 0;
+                for (int sy = (int) y0; sy < syEnd; sy++) {
+                    double wy = Math.min(y1, sy + 1) - Math.max(y0, sy);
+                    for (int sx = (int) x0; sx < sxEnd; sx++) {
+                        double w = wy * (Math.min(x1, sx + 1) - Math.max(x0, sx));
+                        int argb = src[sy * sw + sx];
+                        double pa = alpha(argb) * w;
+                        a += pa;
+                        r += ((argb >> 16) & 0xFF) * pa;
+                        g += ((argb >> 8) & 0xFF) * pa;
+                        b += (argb & 0xFF) * pa;
+                        total += w;
+                    }
+                }
+                int oa = (int) Math.round(a / total);
+                if (oa == 0) continue;
+                out[y * width + x] = (oa << 24)
+                        | ((int) Math.round(r / a) << 16)
+                        | ((int) Math.round(g / a) << 8)
+                        | (int) Math.round(b / a);
+            }
+        }
+
+        BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        scaled.setRGB(0, 0, width, height, out, 0, width);
+        return scaled;
+    }
+
     public static BufferedImage flipHorizontally(BufferedImage image) {
         int w = image.getWidth(), h = image.getHeight();
         BufferedImage flipped = new BufferedImage(w, h, image.getType());

@@ -1,5 +1,6 @@
 package com.discordsrv.heads.renderers;
 
+import com.discordsrv.heads.Heads;
 import com.discordsrv.heads.renderers.SkullRenderer.Side;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,6 +25,14 @@ public enum AvatarType {
     SKULL_ISOMETRIC_RIGHT_HELM,
     PLAYER,
     PLAYER_RIGHT;
+
+    /** Output width in px when the request doesn't give a size. Full players are tall and thin, so they get more. */
+    public int defaultSize() {
+        return switch (this) {
+            case PLAYER, PLAYER_RIGHT -> 256;
+            default -> Heads.DEFAULT_SIZE;
+        };
+    }
 
     /**
      * Creates the renderer for this type. {@code yaw} and {@code pitch} (degrees, nullable) override the

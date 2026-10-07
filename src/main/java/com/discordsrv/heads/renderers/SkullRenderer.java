@@ -19,7 +19,8 @@ import java.awt.image.BufferedImage;
  *                 are 120° apart and every visible face is the same rhombus. Output keeps its natural
  *                 aspect ratio (√3:2 width:height for isometric).
  *
- * Works at SCALE=8 internally, so each skin pixel spans 8 px along every axis of the oblique skull.
+ * Works at SCALE=32 internally, so each skin pixel spans 32 px along every axis of the oblique skull and the
+ * front face is 256 px across.
  * Faces are drawn on a canvas sized for a full helm, then cropped to the drawn pixels of the
  * head plus helm. The plain skull uses the same crop as the helm variant, so the two line up
  * exactly for any given skin.
@@ -38,7 +39,7 @@ public class SkullRenderer implements Renderer {
     public static final View ISOMETRIC_LEFT = new View(45, ISOMETRIC_PITCH);
     public static final View ISOMETRIC_RIGHT = new View(-45, ISOMETRIC_PITCH);
 
-    private static final int SCALE = 8;
+    private static final int SCALE = 32;
     private static final double EXPAND = 0.5;
 
     private static final float SHADE_TOP   = 1.0f;
@@ -95,6 +96,11 @@ public class SkullRenderer implements Renderer {
     @Override
     public BufferedImage render(BufferedImage texture) {
         return view != null ? renderOrthographic(texture) : renderOblique(texture);
+    }
+
+    @Override
+    public boolean antialiased() {
+        return true;
     }
 
     private BufferedImage renderOrthographic(BufferedImage texture) {

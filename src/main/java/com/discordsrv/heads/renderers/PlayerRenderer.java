@@ -6,7 +6,7 @@ import java.awt.image.BufferedImage;
 
 /**
  * Renders a full orthographic 3D player in a neutral standing pose from the given {@link View}.
- * Output is ARGB with a transparent background and 2 px of padding.
+ * Output is ARGB with a transparent background and a quarter of a skin pixel of padding.
  *
  * The base layer is drawn fully opaque (as Minecraft does), with the overlay layer on top.
  * Slim (Alex) skins get 3 px wide arms, attached to the torso.
@@ -22,6 +22,8 @@ public class PlayerRenderer implements Renderer {
     private static final double HAT_EXPAND   = 0.5;
     private static final double LAYER_EXPAND = 0.25;
 
+    private static final int PADDING = (int) BoxModel.SCALE / 4;
+
     private final View view;
     private final boolean slim;
 
@@ -32,7 +34,12 @@ public class PlayerRenderer implements Renderer {
 
     @Override
     public BufferedImage render(BufferedImage texture) {
-        return buildModel(texture, slim).render(view, true, 2);
+        return buildModel(texture, slim).render(view, true, PADDING);
+    }
+
+    @Override
+    public boolean antialiased() {
+        return true;
     }
 
     /**

@@ -10,7 +10,9 @@ import java.util.List;
 
 /**
  * A model made of textured boxes, rendered orthographically from any {@link View}.
- * Works at SCALE=8, so each skin pixel maps to an 8×8 area on the canvas when facing the camera.
+ * Works at SCALE=32, so each skin pixel maps to a 32×32 area on the canvas when facing the camera and a head is
+ * 256 px across. Renders are meant to be shrunk with {@link com.discordsrv.heads.SkinUtil#smoothScale}, which turns
+ * that resolution into smooth edges.
  *
  * Coordinate system: +X = player's left, +Y = up, +Z = toward the player's front.
  *
@@ -19,7 +21,7 @@ import java.util.List;
  */
 final class BoxModel {
 
-    static final double SCALE = 8.0;
+    static final double SCALE = 32.0;
 
     // Face shading factors
     private static final float SHADE_TOP    = 1.00f;

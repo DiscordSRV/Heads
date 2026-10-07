@@ -2,6 +2,8 @@
 No frills Minecraft headshot provider. Retrieves profiles & textures directly from Mojang, falling back to [CraftHead](https://crafthead.net/) if/when issues with Mojang's API are encountered. Bedrock players joining through [Geyser](https://geysermc.org/) are supported via the [GeyserMC global API](https://api.geysermc.org/).
 
 ## Usage
+Try every render type and parameter interactively at [heads.discordsrv.com](https://heads.discordsrv.com/).
+
 ```
 GET https://heads.discordsrv.com/<target>/<type>[/<size>][?yaw=<degrees>&pitch=<degrees>]
 ```
@@ -10,7 +12,7 @@ GET https://heads.discordsrv.com/<target>/<type>[/<size>][?yaw=<degrees>&pitch=<
 |----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `<target>`     | A UUID (dashed or non-dashed), a username, or a texture ID. UUIDs are preferred; `username -> UUID` mappings are cached for one hour. See [offline UUIDs](#offline-uuids) for non-Mojang UUIDs.                  |
 | `<type>`       | One of the [image types](#image-types) below.                                                                                                                                                                    |
-| `<size>`       | Width of the resulting image in pixels, defaulting to `64` and capped at `512`. Non-square images keep their aspect ratio. For `texture`, it's rounded to the nearest multiple of `64` (between `64` and `512`). |
+| `<size>`       | Width of the resulting image in pixels, defaulting to `256` for `player` and `64` for everything else, and capped at `512`. Non-square images keep their aspect ratio. For `texture`, it's rounded to the nearest multiple of `64` (between `64` and `512`). |
 | `yaw`, `pitch` | Camera angles for 3D types (`skull` and `player`). See [camera angles](#camera-angles).                                                                                                                          |
 
 All images are PNGs. `head` and `overlay` are RGB (no transparency); everything else is ARGB with a transparent background.

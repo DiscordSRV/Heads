@@ -86,7 +86,7 @@ Each route accepts a username, a UUID (dashed or non-dashed), or a texture ID.
 | ![](http://localhost:7070/00000000-0000-3000-8000-000000000000/overlay/64)                                    | Offline-mode UUID (Steve) | http://localhost:7070/00000000-0000-3000-8000-000000000000/overlay                                    |
 
 ## Sizes
-`<size>` sets the output width (default `64`, max `512`). `texture` rounds to the nearest multiple of `64`.
+`<size>` sets the output width (default `256` for `player`, `64` otherwise, max `512`). `texture` rounds to the nearest multiple of `64`.
 
 | Image                                          | URL                                        |
 |------------------------------------------------|--------------------------------------------|

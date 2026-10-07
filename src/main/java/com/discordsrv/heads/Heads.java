@@ -1,6 +1,7 @@
 package com.discordsrv.heads;
 
 import com.discordsrv.heads.renderers.AvatarType;
+import com.discordsrv.heads.renderers.Renderer;
 import com.discordsrv.heads.services.CraftHeadService;
 import com.discordsrv.heads.services.GeyserService;
 import com.discordsrv.heads.services.MojangService;
@@ -12,6 +13,7 @@ import com.google.gson.GsonBuilder;
 import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
+import io.javalin.http.Header;
 import io.javalin.http.HttpStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,6 +22,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -47,6 +50,12 @@ public class Heads {
     public static void main(String[] args) {
         Javalin.create(config -> {
             config.showJavalinBanner = false;
+            // The frontend (see frontend/), built into the jar by Gradle. Next.js fingerprints _next/static files, so they can be cached forever
+            config.staticFiles.add(staticFiles -> {
+                staticFiles.hostedPath = "/_next/static";
+                staticFiles.directory = "static/_next/static";
+                staticFiles.headers = Map.of(Header.CACHE_CONTROL, "public, max-age=31536000, immutable");
+            });
             config.staticFiles.add("static");
             config.requestLogger.http((ctx, executionTimeMs) -> {
                 if (ctx.status().equals(HttpStatus.FOUND)) return;
@@ -60,7 +69,6 @@ public class Heads {
                 ));
             });
             config.router.apiBuilder(() -> {
-                get(ctx -> ctx.redirect("https://github.com/DiscordSRV/Heads"));
                 get("head.png", ctx -> {
                     // legacy DiscordSRV heads proxy: ?texture=&uuid=&name=&overlay
                     AvatarType type = ctx.queryParam("overlay") != null ? AvatarType.OVERLAY : AvatarType.HEAD;
@@ -109,8 +117,9 @@ public class Heads {
      * Registers {@code path} and {@code path/{size}}, rendering the given type, or the raw texture if it's null.
      */
     private static void avatar(String path, @Nullable AvatarType avatarType) {
-        get(path + "/{size}", ctx -> handle(ctx, avatarType, ctx.pathParamAsClass("size", Integer.class).getOrDefault(DEFAULT_SIZE)));
-        get(path, ctx -> handle(ctx, avatarType, DEFAULT_SIZE));
+        int defaultSize = avatarType != null ? avatarType.defaultSize() : DEFAULT_SIZE;
+        get(path + "/{size}", ctx -> handle(ctx, avatarType, ctx.pathParamAsClass("size", Integer.class).getOrDefault(defaultSize)));
+        get(path, ctx -> handle(ctx, avatarType, defaultSize));
     }
 
     private static void handle(Context ctx, @Nullable AvatarType avatarType, int size) {
@@ -135,8 +144,12 @@ public class Heads {
             if (avatarType != null) {
                 // Prefer the profile's declared model; texture-only requests have to guess from the texture
                 boolean slim = profile != null ? profile.skinData().slim() : SkinUtil.isSlim(texture);
-                result = avatarType.createRenderer(yaw, pitch, slim).render(texture);
-                if (result.getWidth() != size) result = SkinUtil.scale(result, Math.min(size, MAX_SIZE));
+                Renderer renderer = avatarType.createRenderer(yaw, pitch, slim);
+                result = renderer.render(texture);
+                int width = Math.min(size, MAX_SIZE);
+                if (result.getWidth() != width) {
+                    result = renderer.antialiased() ? SkinUtil.smoothScale(result, width) : SkinUtil.scale(result, width);
+                }
             } else {
                 // Raw textures are only scaled by whole multiples of the 64 px texture width
                 int step = 64;
