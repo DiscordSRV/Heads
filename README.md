@@ -1,5 +1,5 @@
 # DiscordSRV Heads
-No frills Minecraft headshot provider. Retrieves profiles & textures directly from Mojang, falling back to [CraftHead](https://crafthead.net/) if/when issues with Mojang's API are encountered. Bedrock players joining through [Geyser](https://geysermc.org/) are supported via the [GeyserMC global API](https://api.geysermc.org/).
+No frills Minecraft headshot provider. Retrieves profiles & textures directly from Mojang, falling back to [CraftHead](https://crafthead.net/) if/when issues with Mojang's API are encountered. Bedrock players joining through [Geyser](https://geysermc.org/) are supported via the [GeyserMC global API](https://geysermc.org/wiki/api/api.geysermc.org/global-api/).
 
 ## Usage
 Try every render type and parameter interactively at [heads.discordsrv.com](https://heads.discordsrv.com/).
@@ -8,12 +8,12 @@ Try every render type and parameter interactively at [heads.discordsrv.com](http
 GET https://heads.discordsrv.com/<target>/<type>[/<size>][?yaw=<degrees>&pitch=<degrees>]
 ```
 
-| Part           | Description                                                                                                                                                                                                      |
-|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `<target>`     | A UUID (dashed or non-dashed), a username, or a texture ID. UUIDs are preferred; `username -> UUID` mappings are cached for one hour. See [offline UUIDs](#offline-uuids) for non-Mojang UUIDs.                  |
-| `<type>`       | One of the [image types](#image-types) below.                                                                                                                                                                    |
+| Part           | Description                                                                                                                                                                                                                                                  |
+|----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `<target>`     | A UUID (dashed or non-dashed), a username, or a texture ID. UUIDs are preferred; `username -> UUID` mappings are cached for one hour. See [offline UUIDs](#offline-uuids) for non-Mojang UUIDs.                                                              |
+| `<type>`       | One of the [image types](#image-types) below.                                                                                                                                                                                                                |
 | `<size>`       | Width of the resulting image in pixels, defaulting to `256` for `player` and `64` for everything else, and capped at `512`. Non-square images keep their aspect ratio. For `texture`, it's rounded to the nearest multiple of `64` (between `64` and `512`). |
-| `yaw`, `pitch` | Camera angles for 3D types (`skull` and `player`). See [camera angles](#camera-angles).                                                                                                                          |
+| `yaw`, `pitch` | Camera angles for 3D types (`skull` and `player`). See [camera angles](#camera-angles).                                                                                                                                                                      |
 
 All images are PNGs. `head` and `overlay` are RGB (no transparency); everything else is ARGB with a transparent background.
 
@@ -41,7 +41,7 @@ Flat head plus the upper half of the torso and arms.
 |                      `bust`                      |                      `bust/overlay`                      |                      `bust/helm`                      |
 |:------------------------------------------------:|:--------------------------------------------------------:|:-----------------------------------------------------:|
 | ![](https://heads.discordsrv.com/Scarsz/bust/64) | ![](https://heads.discordsrv.com/Scarsz/bust/overlay/64) | ![](https://heads.discordsrv.com/Scarsz/bust/helm/64) |
-|                 No helmet layer.                 |            Helmet layer drawn over the head.             |           Helmet layer scaled up around the head.     |
+|                 No helmet layer.                 |            Helmet layer drawn over the head.             |        Helmet layer scaled up around the head.        |
 
 ### Body
 Flat full body: head, torso, arms and legs.
@@ -49,7 +49,7 @@ Flat full body: head, torso, arms and legs.
 |                      `body`                      |                      `body/overlay`                      |                      `body/helm`                      |
 |:------------------------------------------------:|:--------------------------------------------------------:|:-----------------------------------------------------:|
 | ![](https://heads.discordsrv.com/Scarsz/body/64) | ![](https://heads.discordsrv.com/Scarsz/body/overlay/64) | ![](https://heads.discordsrv.com/Scarsz/body/helm/64) |
-|                 No helmet layer.                 |            Helmet layer drawn over the head.             |           Helmet layer scaled up around the head.     |
+|                 No helmet layer.                 |            Helmet layer drawn over the head.             |        Helmet layer scaled up around the head.        |
 
 ### Skull
 A 3D skull block, showing the front, top and one side of the head.
