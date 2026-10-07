@@ -19,8 +19,8 @@ import java.awt.image.BufferedImage;
  *                 are 120° apart and every visible face is the same rhombus. Output keeps its natural
  *                 aspect ratio (√3:2 width:height for isometric).
  *
- * Works at SCALE=32 internally, so each skin pixel spans 32 px along every axis of the oblique skull and the
- * front face is 256 px across.
+ * Works at SCALE=32 internally, so each skin pixel spans 32 px across the oblique skull's front face (256 px
+ * total) and 16 px along its receding edges.
  * Faces are drawn on a canvas sized for a full helm, then cropped to the drawn pixels of the
  * head plus helm. The plain skull uses the same crop as the helm variant, so the two line up
  * exactly for any given skin.
@@ -41,6 +41,9 @@ public class SkullRenderer implements Renderer {
 
     private static final int SCALE = 32;
     private static final double EXPAND = 0.5;
+
+    // Cabinet: depth is drawn at half scale along a 45° line, so each screen axis moves by ½·cos 45° per unit
+    private static final double RECEDE = 0.5 * Math.cos(Math.PI / 4);
 
     private static final float SHADE_TOP   = 1.0f;
     private static final float SHADE_FRONT = 1.0f;
@@ -252,10 +255,11 @@ public class SkullRenderer implements Renderer {
     }
 
     /**
-     * Oblique projection of box coordinates to unscaled, unanchored screen coordinates (y down).
-     * Front face undistorted; depth goes up toward the visible side at half scale.
+     * Cabinet projection of box coordinates to unscaled, unanchored screen coordinates (y down).
+     * Front face undistorted; depth goes 45° up toward the visible side at half scale.
      */
     private double[] projectRaw(double x, double y, double d) {
-        return new double[]{ x + dir * d / 2, y - d / 2 };
+        double r = d * RECEDE;
+        return new double[]{ x + dir * r, y - r };
     }
 }
